@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Environment variables — kabhi commit mat karna
+.env
+
+# Logs
+npm-debug.log*
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Uploaded files (abhi ke liye)
+uploads/*
+!uploads/.gitkeep
