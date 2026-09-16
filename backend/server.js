@@ -7,6 +7,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
+import studentProfileRoutes from "./routes/studentProfileRoutes.js";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ if (process.env.NODE_ENV !== "production") {
 app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/applications", applicationRoutes);
+app.use("/api/students", studentProfileRoutes);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
