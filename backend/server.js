@@ -5,6 +5,7 @@ import morgan from "morgan";
 import connectDB from "./config/db.js";
 
 import authRoutes from "./routes/authRoutes.js";
+import jobRoutes from "./routes/jobRoutes.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 app.use("/api/auth", authRoutes);
+app.use("/api/jobs", jobRoutes);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
