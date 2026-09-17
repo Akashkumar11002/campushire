@@ -18,6 +18,8 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import http from "http";
 import { initializeSocket } from "./config/socket.js";
 
+import interviewRoutes from "./routes/interviewRoutes.js";
+
 
 
 
@@ -30,6 +32,8 @@ app.use("/api/companies", companyRoutes);
 app.use("/api/resumes", resumeRoutes);
 
 app.use("/api/notifications", notificationRoutes);
+
+app.use("/api/interviews", interviewRoutes);
 
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
