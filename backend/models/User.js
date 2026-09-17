@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: 6,
-      select: false, // password query mein by default nahi aayega
+      select: false, 
     },
     role: {
       type: String,
@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["active", "inactive", "suspended"],
       default: "active",
+    },
+
+        company: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      default: null,
     },
   },
   { timestamps: true }

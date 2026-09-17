@@ -8,6 +8,7 @@ import authRoutes from "./routes/authRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import studentProfileRoutes from "./routes/studentProfileRoutes.js";
+import companyRoutes from "./routes/companyRoutes.js";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/api/companies", companyRoutes);
 
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
