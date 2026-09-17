@@ -2,6 +2,7 @@ import Job from "../models/Job.js";
 import StudentProfile from "../models/StudentProfile.js";
 import JobMatch from "../models/JobMatch.js";
 import calculateJobMatch from "../utils/calculateJobMatch.js";
+import Application from "../models/Application.js";
 
 // @route  GET /api/jobs/:jobId/match
 // Calculates (or recalculates) how well the logged-in student matches a specific job
@@ -39,11 +40,30 @@ export const getJobMatch = async (req, res) => {
 export const getRecommendedJobs = async (req, res) => {
   try {
     const studentProfile = await StudentProfile.findOne({ user: req.user.id });
-    const jobs = await Job.find({ status: "open" }).populate("company", "name logoUrl");
+
+    // Jobs the student has already applied to shouldn't be recommended again
+    const appliedApplications = await Application.find({ student: req.user.id }).select("job");
+    const appliedJobIds = appliedApplications.map((app) => app.job.toString());
+
+    // Exclude closed jobs and jobs whose deadline has already passed
+    const jobs = await Job.find({
+      status: "open",
+      _id: { $nin: appliedJobIds },
+      $or: [{ applicationDeadline: { $exists: false } }, { applicationDeadline: { $gte: new Date() } }],
+    }).populate("company", "name logoUrl");
 
     const jobsWithMatch = jobs.map((job) => {
       const result = calculateJobMatch(studentProfile, job);
-      return { job, ...result };
+
+      // A short, human-readable explanation for why this job was recommended
+      let reason;
+      if (result.matchedSkills.length > 0) {
+        reason = `Matches ${result.matchedSkills.length} of ${job.skillsRequired.length} required skills, including ${result.matchedSkills.slice(0, 2).join(", ")}`;
+      } else {
+        reason = "Based on your overall profile strength";
+      }
+
+      return { job, ...result, reason };
     });
 
     // Highest match score first
