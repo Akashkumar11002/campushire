@@ -19,6 +19,7 @@ import http from "http";
 import { initializeSocket } from "./config/socket.js";
 
 import interviewRoutes from "./routes/interviewRoutes.js";
+import assessmentRoutes from "./routes/assessmentRoutes.js";
 
 
 
@@ -34,6 +35,7 @@ app.use("/api/resumes", resumeRoutes);
 app.use("/api/notifications", notificationRoutes);
 
 app.use("/api/interviews", interviewRoutes);
+app.use("/api/assessments", assessmentRoutes);
 
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
