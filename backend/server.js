@@ -9,6 +9,7 @@ import jobRoutes from "./routes/jobRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
 import studentProfileRoutes from "./routes/studentProfileRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
+import resumeRoutes from "./routes/resumeRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/companies", companyRoutes);
+app.use("/api/resumes", resumeRoutes);
 
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
