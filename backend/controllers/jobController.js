@@ -1,11 +1,20 @@
 import Job from "../models/Job.js";
 
 // @route  POST /api/jobs
-// Recruiter naya job post karta hai — isliye postedBy mein logged-in recruiter ki id daalte hain
+// Post a new job with the logged-in recruiter as the poster
 export const createJob = async (req, res) => {
   try {
+    // Company comes from the recruiter's own linked company, not from the request body,
+    // so a recruiter cannot post a job under someone else's company
+    if (!req.user.company) {
+      return res.status(400).json({
+        message: "Please create a company profile before posting a job",
+      });
+    }
+
     const job = await Job.create({
       ...req.body,
+      company: req.user.company,
       postedBy: req.user.id,
     });
     res.status(201).json(job);
@@ -15,10 +24,12 @@ export const createJob = async (req, res) => {
 };
 
 // @route  GET /api/jobs
-// Sab students/recruiters ko available jobs dikhani hain — isliye ye route open rakha (login zaroori nahi)
+// Show all available jobs to students and recruiters
 export const getJobs = async (req, res) => {
   try {
-    const jobs = await Job.find().populate("postedBy", "name email");
+    const jobs = await Job.find()
+      .populate("postedBy", "name email")
+      .populate("company", "name logoUrl industry");
     res.status(200).json(jobs);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -26,10 +37,12 @@ export const getJobs = async (req, res) => {
 };
 
 // @route  GET /api/jobs/:id
-// Ek specific job ki poori detail dikhani hai (jaise job detail page ke liye)
+// To display the complete details of a specific job, such as on a job details page.)
 export const getJobById = async (req, res) => {
   try {
-    const job = await Job.findById(req.params.id).populate("postedBy", "name email");
+    const job = await Job.findById(req.params.id)
+      .populate("postedBy", "name email")
+      .populate("company", "name logoUrl industry website");
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
@@ -40,7 +53,7 @@ export const getJobById = async (req, res) => {
 };
 
 // @route  PUT /api/jobs/:id
-// Recruiter apni hi job edit kar sake, kisi aur ki nahi — isliye postedBy check kiya
+// The recruiter can edit only their own job, not someone else’s — that’s why we check `postedBy`.
 export const updateJob = async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);

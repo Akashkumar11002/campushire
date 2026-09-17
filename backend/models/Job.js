@@ -12,9 +12,9 @@ const jobSchema = new mongoose.Schema(
       required: [true, "Job description is required"],
     },
     company: {
-      type: String,
-      required: [true, "Company name is required"],
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      required: [true, "Company is required"],
     },
     location: {
       type: String,
@@ -36,6 +36,15 @@ const jobSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+
+    experienceRequired: {
+      type: String, // e.g. "0-1 years", "2-4 years"
+    },
+    applicationDeadline: {
+      type: Date,
+    },
+    
+
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
