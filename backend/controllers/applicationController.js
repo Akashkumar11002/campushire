@@ -2,13 +2,17 @@ import Application from "../models/Application.js";
 import Job from "../models/Job.js";
 
 import sendNotification from "../utils/sendNotification.js";
+import User from "../models/User.js";
+
+import sendEmail from "../utils/sendEmail.js";
+import { applicationConfirmationTemplate, applicationStatusTemplate } from "../utils/emailTemplates.js";
 
 // @route  POST /api/applications/:jobId
 // Student job pe apply karta hai — pehle check kiya job exist karti hai ya nahi,
 // aur duplicate apply hone par sahi error message diya (kyunki DB unique index bas silent fail karega)
 export const applyToJob = async (req, res) => {
   try {
-    const job = await Job.findById(req.params.jobId);
+    const job = await Job.findById(req.params.jobId).populate("company", "name");
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
@@ -18,6 +22,17 @@ export const applyToJob = async (req, res) => {
       student: req.user.id,
       resumeUrl: req.body.resumeUrl,
       coverNote: req.body.coverNote,
+    });
+
+    // Send confirmation email — failures here won't block the application itself
+    sendEmail({
+      to: req.user.email,
+      subject: `Application Received - ${job.title}`,
+      html: applicationConfirmationTemplate(
+        req.user.name,
+        job.title,
+        job.company?.name || job.company || "the company"
+      ),
     });
 
     res.status(201).json(application);
@@ -89,6 +104,15 @@ export const updateApplicationStatus = async (req, res) => {
       type: "application_status",
       relatedId: application._id,
     });
+    // Also send an email — need the student's details for the template
+    const student = await User.findById(application.student);
+    if (student) {
+      sendEmail({
+        to: student.email,
+        subject: `Application Update - ${application.job.title}`,
+        html: applicationStatusTemplate(student.name, application.job.title, status),
+      });
+    }
 
     res.status(200).json(application);
   } catch (error) {
