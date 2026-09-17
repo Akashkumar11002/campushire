@@ -59,6 +59,12 @@ const jobSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes to speed up search and filtering
+jobSchema.index({ title: "text", description: "text" });
+jobSchema.index({ location: 1 });
+jobSchema.index({ skillsRequired: 1 });
+jobSchema.index({ status: 1 });
+
 const Job = mongoose.model("Job", jobSchema);
 
 export default Job;

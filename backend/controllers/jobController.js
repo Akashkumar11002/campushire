@@ -27,10 +27,62 @@ export const createJob = async (req, res) => {
 // Show all available jobs to students and recruiters
 export const getJobs = async (req, res) => {
   try {
-    const jobs = await Job.find()
+    const {
+      keyword,
+      location,
+      jobType,
+      minSalary,
+      skills,
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    const query = { status: "open" };
+
+    // Keyword search checks both title and description
+    if (keyword) {
+      query.$or = [
+        { title: { $regex: keyword, $options: "i" } },
+        { description: { $regex: keyword, $options: "i" } },
+      ];
+    }
+
+    if (location) {
+      query.location = { $regex: location, $options: "i" };
+    }
+
+    if (jobType) {
+      query.jobType = jobType;
+    }
+
+    if (minSalary) {
+      query.salaryMax = { $gte: Number(minSalary) };
+    }
+
+    if (skills) {
+      // skills can be passed as a comma-separated string, e.g. skills=React,Node.js
+      const skillsArray = skills.split(",").map((s) => s.trim());
+      query.skillsRequired = { $in: skillsArray };
+    }
+
+    const pageNumber = Number(page);
+    const pageSize = Number(limit);
+
+    const totalJobs = await Job.countDocuments(query);
+
+    const jobs = await Job.find(query)
       .populate("postedBy", "name email")
-      .populate("company", "name logoUrl industry");
-    res.status(200).json(jobs);
+      .populate("company", "name logoUrl industry")
+      .sort({ createdAt: -1 })
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize);
+
+    res.status(200).json({
+      jobs,
+      totalJobs,
+      totalPages: Math.ceil(totalJobs / pageSize),
+      currentPage: pageNumber,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
