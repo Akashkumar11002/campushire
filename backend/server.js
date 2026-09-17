@@ -11,6 +11,12 @@ import studentProfileRoutes from "./routes/studentProfileRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
 import resumeRoutes from "./routes/resumeRoutes.js";
 
+import notificationRoutes from "./routes/notificationRoutes.js";
+
+
+import http from "http";
+import { initializeSocket } from "./config/socket.js";
+
 dotenv.config();
 
 const app = express();
@@ -20,6 +26,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/companies", companyRoutes);
 app.use("/api/resumes", resumeRoutes);
+
+app.use("/api/notifications", notificationRoutes);
 
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
@@ -53,9 +61,13 @@ app.use((err, req, res, next) => {
   });
 });
 
+
+const httpServer = http.createServer(app);
+initializeSocket(httpServer);
+
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`CampusHire API listening on port ${PORT}`);
   connectDB();
 });

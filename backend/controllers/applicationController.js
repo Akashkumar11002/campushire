@@ -1,6 +1,8 @@
 import Application from "../models/Application.js";
 import Job from "../models/Job.js";
 
+import sendNotification from "../utils/sendNotification.js";
+
 // @route  POST /api/applications/:jobId
 // Student job pe apply karta hai — pehle check kiya job exist karti hai ya nahi,
 // aur duplicate apply hone par sahi error message diya (kyunki DB unique index bas silent fail karega)
@@ -79,6 +81,14 @@ export const updateApplicationStatus = async (req, res) => {
 
     application.status = status;
     await application.save();
+
+    // Let the student know their application status changed, in real time if they're online
+    await sendNotification({
+      recipient: application.student,
+      message: `Your application for "${application.job.title}" is now ${status}`,
+      type: "application_status",
+      relatedId: application._id,
+    });
 
     res.status(200).json(application);
   } catch (error) {
